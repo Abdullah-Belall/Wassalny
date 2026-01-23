@@ -5,6 +5,7 @@ import type { Response } from 'express';
 import { User } from './decorators/user.decorator';
 import type { UserTokenInterface } from './types/interfaces/user-token.interface';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('users')
 export class UsersController {
@@ -12,11 +13,14 @@ export class UsersController {
 
   @Post('register')
   async register(
-    @Body() signInDto: SignInDto,
+    @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.usersService.register(signInDto);
-    return await this.usersService.signIn(signInDto, res);
+    await this.usersService.register(registerDto);
+    return await this.usersService.signIn({
+      password: registerDto.password,
+      phone: registerDto.phone
+    }, res);
   }
 
   @Post('login')

@@ -10,29 +10,42 @@ import * as bcrypt from 'bcrypt';
 import type { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { UserTokenInterface } from './types/interfaces/user-token.interface';
+import { RegisterDto } from './dto/register.dto';
+import { DriverUserExtDBService } from './DB_Service/driver-user-ext_db.service';
+import { UserTypeEnum } from './types/enums/user-type.enum';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersDBService: UsersDBService,
+    private readonly driverUserExtDBService: DriverUserExtDBService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
-  async register({ phone, password }: SignInDto) {
+  async register({ phone, password, type }: RegisterDto) {
     const isDublicated = await this.usersDBService.findOne({
       where: {
         phone
       }
     })
-    if(isDublicated)
+    if (isDublicated)
       throw new ConflictException()
     const hashedPass = await bcrypt.hash(password, 12)
-    await this.usersDBService.save(this.usersDBService.instance({
+    const savedUser = await this.usersDBService.save(this.usersDBService.instance({
       index: await this.usersDBService.nextIndex(),
       phone,
       password: hashedPass,
+      type
     }))
+    if (type === UserTypeEnum.DRIVER) {
+      await this.driverUserExtDBService.save(
+        this.driverUserExtDBService.instance({
+          user: savedUser
+        })
+      )
+    }
   }
+
   async signIn({ phone, password }: SignInDto, response: Response) {
     const user = await this.usersDBService.findOne({
       where: {
@@ -50,6 +63,7 @@ export class UsersService {
       id: user.id,
       index: user.index,
       phone: user.phone,
+      type: user.type,
     });
     response.cookie('access_token', access_token, {
       httpOnly: true,
@@ -63,6 +77,7 @@ export class UsersService {
       user: { ...user, password: undefined },
     };
   }
+
   async signOut(response: Response) {
     response.clearCookie('access_token', {
       httpOnly: false,
@@ -73,6 +88,7 @@ export class UsersService {
       done: true,
     };
   }
+
   async profile(id: string) {
     const user = await this.usersDBService.findOne({
       where: {
@@ -81,7 +97,9 @@ export class UsersService {
     });
     return { ...user, password: undefined };
   }
+
   private generateAccessToken(payload: UserTokenInterface): string {
     return this.jwtService.sign(payload);
   }
+
 }

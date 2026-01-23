@@ -4,6 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { UsersModule } from './users/users.module';
+import { CarsModule } from './cars/cars.module';
+import { ImagesModule } from './images/images.module';
+import { TravelsModule } from './travels/travels.module';
+import { TravelsPassengersModule } from './travels_passengers/travels_passengers.module';
 
 @Module({
   imports: [
@@ -30,7 +34,11 @@ import { UsersModule } from './users/users.module';
       }),
       inject: [ConfigService],
     }),
-    UsersModule
+    UsersModule,
+    CarsModule,
+    ImagesModule,
+    TravelsModule,
+    TravelsPassengersModule
   ],
 })
 export class AppModule implements NestModule {
