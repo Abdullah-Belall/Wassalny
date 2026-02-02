@@ -5,7 +5,7 @@ import { UpdateCarDto } from './dto/update-car.dto';
 
 @Controller('cars')
 export class CarsController {
-  constructor(private readonly carsService: CarsService) {}
+  constructor(private readonly carsService: CarsService) { }
 
   @Post()
   create(@Body() createCarDto: CreateCarDto) {
@@ -15,6 +15,11 @@ export class CarsController {
   @Get()
   findAll() {
     return this.carsService.findAll();
+  }
+
+  @Get('user/:userId')
+  findByUserId(@Param('userId') userId: string) {
+    return this.carsService.findByUserId(userId);
   }
 
   @Get(':id')

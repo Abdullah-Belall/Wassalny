@@ -6,6 +6,8 @@ import { CarsDBService } from 'src/cars/DB_Service/cars_db.service';
 import { TravelStatusEnum } from './types/enums/travel-status.enum';
 import { UpdateTravelStatusDto } from './dto/change-travel-status.dto';
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
+import { SearchTravelsDto } from './dto/search-travels.dto';
+import { Like, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
 
 @Injectable()
 export class TravelsService {
@@ -40,6 +42,45 @@ export class TravelsService {
     return await this.travelsDBService.find({
       where: {},
       relations: ['car', 'travel_passengers'],
+    });
+  }
+
+  async findByDriverUserId(driverUserId: string) {
+    return await this.travelsDBService.find({
+      where: {
+        car: {
+          driver: {
+            user: { id: driverUserId },
+          },
+        },
+      },
+      relations: ['car', 'car.driver', 'travel_passengers'],
+      order: { start_time: 'ASC' },
+    });
+  }
+
+  async search(searchTravelsDto: SearchTravelsDto) {
+    const where: any = {};
+    if (searchTravelsDto.start_location) {
+      where.start_location = Like(`%${searchTravelsDto.start_location}%`);
+    }
+    if (searchTravelsDto.end_location) {
+      where.end_location = Like(`%${searchTravelsDto.end_location}%`);
+    }
+    if (searchTravelsDto.start_time_from && searchTravelsDto.start_time_to) {
+      where.start_time = Between(
+        searchTravelsDto.start_time_from,
+        searchTravelsDto.start_time_to,
+      );
+    } else if (searchTravelsDto.start_time_from) {
+      where.start_time = MoreThanOrEqual(searchTravelsDto.start_time_from);
+    } else if (searchTravelsDto.start_time_to) {
+      where.start_time = LessThanOrEqual(searchTravelsDto.start_time_to);
+    }
+    return await this.travelsDBService.find({
+      where,
+      relations: ['car', 'travel_passengers'],
+      order: { start_time: 'ASC' },
     });
   }
 

@@ -13,6 +13,8 @@ import { UserTokenInterface } from './types/interfaces/user-token.interface';
 import { RegisterDto } from './dto/register.dto';
 import { DriverUserExtDBService } from './DB_Service/driver-user-ext_db.service';
 import { UserTypeEnum } from './types/enums/user-type.enum';
+import { ChangeKnownPasswordDto } from './dto/change-known-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -95,6 +97,47 @@ export class UsersService {
         id,
       },
     });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return { ...user, password: undefined };
+  }
+
+  async changeKnownPassword(userId: string, dto: ChangeKnownPasswordDto) {
+    const user = await this.usersDBService.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const isMatch = await bcrypt.compare(dto.current_password, user.password);
+    if (!isMatch) {
+      throw new ForbiddenException('Current password is wrong.');
+    }
+    const hashedPass = await bcrypt.hash(dto.new_password, 12);
+    await this.usersDBService.save({ ...user, password: hashedPass });
+    return { done: true };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.usersDBService.findOne({
+      where: { phone: dto.phone },
+    });
+    if (!user) {
+      throw new NotFoundException('No user found with this phone.');
+    }
+    const hashedPass = await bcrypt.hash(dto.new_password, 12);
+    await this.usersDBService.save({ ...user, password: hashedPass });
+    return { done: true };
+  }
+
+  async getProfileById(targetUserId: string) {
+    const user = await this.usersDBService.findOne({
+      where: { id: targetUserId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return { ...user, password: undefined };
   }
 

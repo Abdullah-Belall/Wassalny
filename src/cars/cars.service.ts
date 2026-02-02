@@ -11,7 +11,7 @@ export class CarsService {
     private readonly carsDBService: CarsDBService,
     private readonly imagesDBService: ImagesDBService,
     private readonly driverUserExtDBService: DriverUserExtDBService,
-  ){}
+  ) { }
 
   async create(createCarDto: CreateCarDto) {
     // Check if driver exists
@@ -33,7 +33,7 @@ export class CarsService {
       throw new BadRequestException('Invalid images_json format');
     }
 
-    const {driver_id, images_json, ...carInfo} = createCarDto
+    const { driver_id, images_json, ...carInfo } = createCarDto
     // Create car
     const car = this.carsDBService.instance({
       driver,
@@ -61,6 +61,20 @@ export class CarsService {
   async findAll() {
     const { cars, total } = await this.carsDBService.find({
       where: {},
+      relations: ['images', 'driver'],
+    });
+    return { cars, total };
+  }
+
+  async findByUserId(userId: string) {
+    const driver = await this.driverUserExtDBService.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!driver) {
+      throw new NotFoundException('Driver not found for this user');
+    }
+    const { cars, total } = await this.carsDBService.find({
+      where: { driver: { id: driver.id } },
       relations: ['images', 'driver'],
     });
     return { cars, total };
