@@ -15,9 +15,7 @@ export class CarsService {
 
   async create(createCarDto: CreateCarDto) {
     // Check if driver exists
-    const driver = await this.driverUserExtDBService.findOne({
-      where: { id: createCarDto.driver_id },
-    });
+    const driver = await this.findByUserId(createCarDto.driver_id);
     if (!driver) {
       throw new NotFoundException('Driver not found');
     }

@@ -68,7 +68,7 @@ export class UsersService {
       type: user.type,
     });
     response.cookie('access_token', access_token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
