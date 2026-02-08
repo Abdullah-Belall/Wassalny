@@ -55,7 +55,7 @@ export class TravelsService {
           },
         },
       },
-      relations: ['car', 'car.driver', 'travel_passengers'],
+      relations: ['car', 'car.driver', 'car.driver.user', 'travel_passengers'],
       order: { start_time: 'ASC' },
     });
   }
