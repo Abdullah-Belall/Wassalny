@@ -24,7 +24,7 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) { }
 
-  async register({ phone, password, type }: RegisterDto) {
+  async register({ phone, password, type , image_id, user_name}: RegisterDto) {
     const isDublicated = await this.usersDBService.findOne({
       where: {
         phone
@@ -37,7 +37,9 @@ export class UsersService {
       index: await this.usersDBService.nextIndex(),
       phone,
       password: hashedPass,
-      type
+      type,
+      user_name,
+      avatar: image_id
     }))
     if (type === UserTypeEnum.DRIVER) {
       await this.driverUserExtDBService.save(

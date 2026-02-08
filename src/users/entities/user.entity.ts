@@ -28,6 +28,8 @@ export class UserEntity {
   index: number;
   @Column({ nullable: true })
   user_name: string
+  @Column({ nullable: true })
+  avatar: string
   @Column()
   phone: string;
   @Column()
