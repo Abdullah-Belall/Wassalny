@@ -273,15 +273,10 @@ export class TravelsPassengersService {
   }
 
   async getPassengerTravels(userId: string) {
-    console.log(userId);
-    const passenger = await this.passengerUserExtDBService.findOne({
-      where: { user: { id: userId } },
-    });
-    if (!passenger) {
-      throw new NotFoundException('Passenger not found for this user');
-    }
     const { travelsPassengers, total } = await this.travelsPassengersDBService.find({
-      where: { passenger: { id: passenger.id } },
+      where: { passenger: { user: {
+        id: userId
+      } } },
       relations: ['travel', 'travel.car', 'passenger'],
       order: { start_time: 'ASC' },
     });
