@@ -1,4 +1,4 @@
-import { IsJSON, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsJSON, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateCarDto {
   @IsJSON()

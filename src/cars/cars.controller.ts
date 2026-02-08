@@ -34,7 +34,9 @@ export class CarsController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateCarDto: UpdateCarDto) {
     return await this.carsService.update(id, updateCarDto);
   }
 }

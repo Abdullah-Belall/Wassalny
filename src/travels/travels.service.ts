@@ -34,7 +34,8 @@ export class TravelsService {
     await this.travelsDBService.save(travel);
 
     return {
-      done: true
+      done: true,
+      travel
     }
   }
 
