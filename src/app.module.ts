@@ -8,6 +8,7 @@ import { CarsModule } from './cars/cars.module';
 import { ImagesModule } from './images/images.module';
 import { TravelsModule } from './travels/travels.module';
 import { TravelsPassengersModule } from './travels_passengers/travels_passengers.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { TravelsPassengersModule } from './travels_passengers/travels_passengers
     CarsModule,
     ImagesModule,
     TravelsModule,
-    TravelsPassengersModule
+    TravelsPassengersModule,
+    ReviewsModule
   ],
 })
 export class AppModule implements NestModule {

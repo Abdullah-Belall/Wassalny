@@ -2,6 +2,7 @@ import { CarEntity } from "src/cars/entities/car.entity";
 import { TravelsPassengerEntity } from "src/travels_passengers/entities/travels_passenger.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { TravelStatusEnum } from "../types/enums/travel-status.enum";
+import { ReviewEntity } from "src/reviews/entities/review.entity";
 
 @Entity({ name: 'travels' })
 export class TravelEntity {
@@ -10,6 +11,9 @@ export class TravelEntity {
 
   @ManyToOne(() => CarEntity, (car) => car.travels)
   car: CarEntity;
+  
+  @OneToMany(() => ReviewEntity, (review) => review.travel)
+  reviews: ReviewEntity[];
   
   @OneToMany(() => TravelsPassengerEntity, (trav) => trav.travel)
   travel_passengers: TravelsPassengerEntity[];
