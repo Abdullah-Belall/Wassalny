@@ -1,11 +1,11 @@
-import { IsDate, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsNumber, IsString, IsUUID } from "class-validator";
 
 export class CreateTravelDto {
   @IsUUID()
   car_id: string;
   @IsString()
   details: string;
-  @IsDate()
+  @IsDateString()
   start_time: string;
   @IsString()
   start_location: string;

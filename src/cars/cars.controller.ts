@@ -5,25 +5,30 @@ import { UpdateCarDto } from './dto/update-car.dto';
 
 @Controller('cars')
 export class CarsController {
-  constructor(private readonly carsService: CarsService) {}
+  constructor(private readonly carsService: CarsService) { }
 
   @Post()
-  create(@Body() createCarDto: CreateCarDto) {
-    return this.carsService.create(createCarDto);
+  async create(@Body() createCarDto: CreateCarDto) {
+    return await this.carsService.create(createCarDto);
   }
 
   @Get()
-  findAll() {
-    return this.carsService.findAll();
+  async findAll() {
+    return await this.carsService.findAll();
+  }
+
+  @Get('user/:userId')
+  async findByUserId(@Param('userId') userId: string) {
+    return await this.carsService.findByUserId(userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.carsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.carsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto) {
-    return this.carsService.update(id, updateCarDto);
+  async update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto) {
+    return await this.carsService.update(id, updateCarDto);
   }
 }

@@ -26,6 +26,8 @@ export class UserEntity {
 
   @Column({ type: 'int' })
   index: number;
+  @Column({ nullable: true })
+  user_name: string
   @Column()
   phone: string;
   @Column()

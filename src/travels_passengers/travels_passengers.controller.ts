@@ -5,6 +5,8 @@ import {
   Patch,
   Param,
   UseGuards,
+  Get,
+  Delete,
 } from '@nestjs/common';
 import { TravelsPassengersService } from './travels_passengers.service';
 import { CreateTravelsPassengerDto } from './dto/create-travels_passenger.dto';
@@ -17,12 +19,24 @@ import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.i
 export class TravelsPassengersController {
   constructor(
     private readonly travelsPassengersService: TravelsPassengersService,
-  ) {}
+  ) { }
 
   @Post()
   @UseGuards(AuthGuard)
   create(@Body() createTravelsPassengerDto: CreateTravelsPassengerDto) {
     return this.travelsPassengersService.create(createTravelsPassengerDto);
+  }
+
+  @Get('passenger/me')
+  @UseGuards(AuthGuard)
+  getPassengerTravels(@User() { id }: UserTokenInterface) {
+    return this.travelsPassengersService.getPassengerTravels(id);
+  }
+
+  @Get('booking-requests')
+  @UseGuards(AuthGuard)
+  getBookingRequests(@User() { id }: UserTokenInterface) {
+    return this.travelsPassengersService.getBookingRequests(id);
   }
 
   @Patch(':id/status')
@@ -58,6 +72,18 @@ export class TravelsPassengersController {
     @Param('id') travel_passenger_id: string,
   ) {
     return this.travelsPassengersService.payToConfirm(
+      user_id,
+      travel_passenger_id,
+    );
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  removePassengerFromTravel(
+    @User() { id: user_id }: UserTokenInterface,
+    @Param('id') travel_passenger_id: string,
+  ) {
+    return this.travelsPassengersService.removePassengerFromTravel(
       user_id,
       travel_passenger_id,
     );

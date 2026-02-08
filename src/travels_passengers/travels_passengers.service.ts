@@ -6,6 +6,7 @@ import { UpdateTravelPassengerStatusDto } from './dto/update-travel-passenger-st
 import { TravelPassengerStatusEnum } from './types/enums/travel-passenger-status.enum';
 import { TravelStatusEnum } from 'src/travels/types/enums/travel-status.enum';
 import { PassengerUserExtDBService } from 'src/users/DB_Service/passenger-user-ext_db.service';
+import { DriverUserExtDBService } from 'src/users/DB_Service/driver-user-ext_db.service';
 
 @Injectable()
 export class TravelsPassengersService {
@@ -13,6 +14,7 @@ export class TravelsPassengersService {
     private readonly travelsPassengersDBService: TravelsPassengersDBService,
     private readonly travelsDBService: TravelsDBService,
     private readonly passengerUserExtDBService: PassengerUserExtDBService,
+    private readonly driverUserExtDBService: DriverUserExtDBService,
   ) { }
 
   async create(createTravelsPassengerDto: CreateTravelsPassengerDto) {
@@ -36,9 +38,11 @@ export class TravelsPassengersService {
 
     // Check if passenger exists
     const passenger = await this.passengerUserExtDBService.findOne({
-      where: { user: {
-        id: createTravelsPassengerDto.passenger_id
-      } },
+      where: {
+        user: {
+          id: createTravelsPassengerDto.passenger_id
+        }
+      },
     });
     if (!passenger) {
       throw new NotFoundException('Passenger not found');
@@ -266,5 +270,65 @@ export class TravelsPassengersService {
     return {
       done: true,
     };
+  }
+
+  async getPassengerTravels(userId: string) {
+    const passenger = await this.passengerUserExtDBService.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!passenger) {
+      throw new NotFoundException('Passenger not found for this user');
+    }
+    const { travelsPassengers, total } = await this.travelsPassengersDBService.find({
+      where: { passenger: { id: passenger.id } },
+      relations: ['travel', 'travel.car', 'passenger'],
+      order: { start_time: 'ASC' },
+    });
+    return { travelsPassengers, total };
+  }
+
+  async getBookingRequests(userId: string) {
+    const driver = await this.driverUserExtDBService.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!driver) {
+      throw new NotFoundException('Driver not found for this user');
+    }
+    const { travelsPassengers, total } = await this.travelsPassengersDBService.find({
+      where: {
+        status: TravelPassengerStatusEnum.PENDING,
+        travel: {
+          car: {
+            driver: { id: driver.id },
+          },
+        },
+      },
+      relations: ['travel', 'travel.car', 'passenger', 'passenger.user'],
+      order: { created_at: 'DESC' },
+    });
+    return { travelsPassengers, total };
+  }
+
+  async removePassengerFromTravel(userId: string, travelPassengerId: string) {
+    const travelPassenger = await this.travelsPassengersDBService.findOne({
+      where: { id: travelPassengerId },
+      relations: ['travel', 'travel.car', 'travel.car.driver', 'travel.car.driver.user'],
+    });
+    if (!travelPassenger) {
+      throw new NotFoundException('Travel passenger not found');
+    }
+    if (travelPassenger.travel.car.driver.user.id !== userId) {
+      throw new UnauthorizedException(
+        'You are not authorized to remove passengers from this travel.',
+      );
+    }
+    if (travelPassenger.status !== TravelPassengerStatusEnum.PENDING) {
+      throw new BadRequestException(
+        'Can only remove passengers with PENDING status.',
+      );
+    }
+    travelPassenger.status = TravelPassengerStatusEnum.DRIVER_REJECT;
+    await this.travelsPassengersDBService.save(travelPassenger);
+    return { done: true };
   }
 }
