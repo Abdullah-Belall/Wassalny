@@ -10,11 +10,11 @@ export class TravelEntity {
 
   @ManyToOne(() => CarEntity, (car) => car.travels)
   car: CarEntity;
-  
+
   @OneToMany(() => TravelsPassengerEntity, (trav) => trav.travel)
   travel_passengers: TravelsPassengerEntity[];
 
-  @Column({ type: 'enum', enum: TravelStatusEnum,default: TravelStatusEnum.PENDING })
+  @Column({ type: 'enum', enum: TravelStatusEnum, default: TravelStatusEnum.PENDING })
   status: TravelStatusEnum
   @Column({ nullable: true })
   details: string;
