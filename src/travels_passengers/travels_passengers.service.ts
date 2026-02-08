@@ -38,7 +38,11 @@ export class TravelsPassengersService {
 
     // Check if passenger exists
     const passenger = await this.passengerUserExtDBService.findOne({
-      where: { id: createTravelsPassengerDto.passenger_id },
+      where: {
+        user: {
+          id: createTravelsPassengerDto.passenger_id
+        }
+      },
     });
     if (!passenger) {
       throw new NotFoundException('Passenger not found');
