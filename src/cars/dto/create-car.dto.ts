@@ -1,8 +1,10 @@
-import { IsJSON, IsNumber, IsString, IsUUID } from "class-validator";
+import { IsJSON, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
 
 export class CreateCarDto {
   @IsJSON()
   images_json: string
+  @IsString()
+  @IsOptional()
   driver_id: string
   @IsString()
   car_type: string;
