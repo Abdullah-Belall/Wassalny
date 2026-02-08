@@ -273,6 +273,7 @@ export class TravelsPassengersService {
   }
 
   async getPassengerTravels(userId: string) {
+    console.log(userId);
     const passenger = await this.passengerUserExtDBService.findOne({
       where: { user: { id: userId } },
     });
