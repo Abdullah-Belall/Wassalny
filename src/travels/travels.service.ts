@@ -41,7 +41,7 @@ export class TravelsService {
   async findAll() {
     return await this.travelsDBService.find({
       where: {},
-      relations: ['car', 'car.driver', 'travel_passengers'],
+      relations: ['car', 'car.driver', 'car.driver.user', 'travel_passengers'],
     });
   }
 
