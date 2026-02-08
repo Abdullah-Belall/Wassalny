@@ -1,15 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { CarsService } from './cars.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
+import { User } from 'src/users/decorators/user.decorator';
+import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('cars')
+@UseGuards(AuthGuard)
 export class CarsController {
   constructor(private readonly carsService: CarsService) { }
 
   @Post()
-  async create(@Body() createCarDto: CreateCarDto) {
-    return await this.carsService.create(createCarDto);
+  async create(
+    @User() {id} : UserTokenInterface,
+    @Body() createCarDto: CreateCarDto) {
+    return await this.carsService.create({...createCarDto, driver_id: id});
   }
 
   @Get()
