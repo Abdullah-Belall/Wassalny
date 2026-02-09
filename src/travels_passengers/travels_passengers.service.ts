@@ -7,6 +7,8 @@ import { TravelPassengerStatusEnum } from './types/enums/travel-passenger-status
 import { TravelStatusEnum } from 'src/travels/types/enums/travel-status.enum';
 import { PassengerUserExtDBService } from 'src/users/DB_Service/passenger-user-ext_db.service';
 import { DriverUserExtDBService } from 'src/users/DB_Service/driver-user-ext_db.service';
+import { UsersDBService } from 'src/users/DB_Service/users_db.service';
+import { UserTypeEnum } from 'src/users/types/enums/user-type.enum';
 
 @Injectable()
 export class TravelsPassengersService {
@@ -14,6 +16,7 @@ export class TravelsPassengersService {
     private readonly travelsPassengersDBService: TravelsPassengersDBService,
     private readonly travelsDBService: TravelsDBService,
     private readonly passengerUserExtDBService: PassengerUserExtDBService,
+    private readonly usersDBService: UsersDBService,
     private readonly driverUserExtDBService: DriverUserExtDBService,
   ) { }
 
@@ -37,16 +40,21 @@ export class TravelsPassengersService {
     }
 
     // Check if passenger exists
-    const passenger = await this.passengerUserExtDBService.findOne({
+    const user = await this.usersDBService.findOne({
       where: {
-        user: {
-          id: createTravelsPassengerDto.passenger_id
-        }
+        id: createTravelsPassengerDto.passenger_id
       },
-    });
-    if (!passenger) {
+      relations: ['passenger_ext']
+    })
+    if (!user || user.type !== UserTypeEnum.PASSENGER) {
       throw new NotFoundException('Passenger not found');
     }
+    if(!user.passenger_ext)
+      user.passenger_ext = await this.passengerUserExtDBService.save(
+    this.passengerUserExtDBService.instance({
+      user,
+    })
+  )
 
     // Calculate total_price from travel price_per_seat
     const total_price = Number(travel.price_per_seat);
@@ -54,7 +62,7 @@ export class TravelsPassengersService {
     // Create travel passenger with data from travel
     const travelPassenger = this.travelsPassengersDBService.instance({
       travel,
-      passenger,
+      passenger: user.passenger_ext,
       deposit: createTravelsPassengerDto.deposit,
       total_price,
       start_time: travel.start_time,
