@@ -41,7 +41,7 @@ export class TravelsService {
   async findAll() {
     return await this.travelsDBService.find({
       where: {},
-      relations: ['car', 'car.driver', 'car.driver.user', 'travel_passengers'],
+      relations: ['car', 'car.images' ,'car.driver', 'car.driver.user', 'travel_passengers'],
     });
   }
 
@@ -80,7 +80,7 @@ export class TravelsService {
     where.status = Not(TravelStatusEnum.FULLY_BOOKED);
     return await this.travelsDBService.find({
       where,
-      relations: ['car', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
+      relations: ['car','car.images', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
       order: { start_time: 'ASC' },
     });
   }
