@@ -5,9 +5,8 @@ import { TravelsDBService } from './DB_Service/travels_db.service';
 import { CarsDBService } from 'src/cars/DB_Service/cars_db.service';
 import { TravelStatusEnum } from './types/enums/travel-status.enum';
 import { UpdateTravelStatusDto } from './dto/change-travel-status.dto';
-import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { SearchTravelsDto } from './dto/search-travels.dto';
-import { Like, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
+import { Like, MoreThanOrEqual, LessThanOrEqual, Between, Not } from 'typeorm';
 
 @Injectable()
 export class TravelsService {
@@ -55,7 +54,7 @@ export class TravelsService {
           },
         },
       },
-      relations: ['car', 'car.driver', 'car.images', 'car.driver.user', 'travel_passengers'],
+      relations: ['car', 'car.driver', 'car.images', 'car.driver.user', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
       order: { start_time: 'ASC' },
     });
   }
@@ -78,9 +77,10 @@ export class TravelsService {
     } else if (searchTravelsDto.start_time_to) {
       where.start_time = LessThanOrEqual(searchTravelsDto.start_time_to);
     }
+    where.status = Not(TravelStatusEnum.FULLY_BOOKED);
     return await this.travelsDBService.find({
       where,
-      relations: ['car', 'travel_passengers'],
+      relations: ['car', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
       order: { start_time: 'ASC' },
     });
   }
