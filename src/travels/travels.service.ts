@@ -80,7 +80,15 @@ export class TravelsService {
     where.status = Not(TravelStatusEnum.FULLY_BOOKED);
     return await this.travelsDBService.find({
       where,
-      relations: ['car','car.images', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
+      relations: [
+        'car',
+        'car.driver',
+        'car.driver.user',
+        'car.images',
+        'travel_passengers',
+        'travel_passengers.passenger',
+        'travel_passengers.passenger.user'
+      ],
       order: { start_time: 'ASC' },
     });
   }
