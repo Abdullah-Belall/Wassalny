@@ -41,13 +41,20 @@ export class TravelsService {
   async findAll(user_id: string) {
     const { total, travels } = await this.travelsDBService.find({
       where: {},
-      relations: ['car', 'car.images', 'car.driver', 'car.driver.user', 'travel_passengers'],
+      relations: [
+        'car',
+        'car.driver',
+        'car.driver.user',
+        'car.images',
+        'travel_passengers',
+        'travel_passengers.passenger',
+        'travel_passengers.passenger.user'
+      ],
     });
     travels.forEach((e) => {
       const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id === user_id)
       if (isCurrUserPassenger) {
         (e as any).curr_user_status = isCurrUserPassenger.status
-        delete (e as any).travel_passengers
       } else {
         (e as any).curr_user_status = null
       }
