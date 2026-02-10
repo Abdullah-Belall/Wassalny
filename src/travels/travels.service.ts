@@ -39,10 +39,21 @@ export class TravelsService {
   }
 
   async findAll() {
-    return await this.travelsDBService.find({
+    const { total, travels } = await this.travelsDBService.find({
       where: {},
-      relations: ['car', 'car.images' ,'car.driver', 'car.driver.user', 'travel_passengers'],
+      relations: ['car', 'car.images', 'car.driver', 'car.driver.user', 'travel_passengers'],
     });
+    travels.forEach((e) => {
+      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id)
+      if (isCurrUserPassenger) {
+        (e as any).curr_user_status = isCurrUserPassenger.status
+        delete (e as any).travel_passengers
+      }
+    })
+    return {
+      travels,
+      total
+    }
   }
 
   async findByDriverUserId(driverUserId: string) {
@@ -78,7 +89,7 @@ export class TravelsService {
       where.start_time = LessThanOrEqual(searchTravelsDto.start_time_to);
     }
     where.status = Not(TravelStatusEnum.FULLY_BOOKED);
-    return await this.travelsDBService.find({
+    const { travels, total } = await this.travelsDBService.find({
       where,
       relations: [
         'car',
@@ -91,6 +102,17 @@ export class TravelsService {
       ],
       order: { start_time: 'ASC' },
     });
+    travels.forEach((e) => {
+      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id)
+      if (isCurrUserPassenger) {
+        (e as any).curr_user_status = isCurrUserPassenger.status
+        delete (e as any).travel_passengers
+      }
+    })
+    return {
+      travels,
+      total
+    }
   }
 
   async findOne(id: string) {
