@@ -38,13 +38,13 @@ export class TravelsService {
     }
   }
 
-  async findAll() {
+  async findAll(user_id: string) {
     const { total, travels } = await this.travelsDBService.find({
       where: {},
       relations: ['car', 'car.images', 'car.driver', 'car.driver.user', 'travel_passengers'],
     });
     travels.forEach((e) => {
-      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id)
+      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id === user_id)
       if (isCurrUserPassenger) {
         (e as any).curr_user_status = isCurrUserPassenger.status
         delete (e as any).travel_passengers
@@ -70,7 +70,7 @@ export class TravelsService {
     });
   }
 
-  async search(searchTravelsDto: SearchTravelsDto) {
+  async search(user_id: string, searchTravelsDto: SearchTravelsDto) {
     const where: any = {};
     if (searchTravelsDto.start_location) {
       where.start_location = Like(`%${searchTravelsDto.start_location}%`);
@@ -103,7 +103,7 @@ export class TravelsService {
       order: { start_time: 'ASC' },
     });
     travels.forEach((e) => {
-      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id)
+      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id === user_id)
       if (isCurrUserPassenger) {
         (e as any).curr_user_status = isCurrUserPassenger.status
         delete (e as any).travel_passengers
