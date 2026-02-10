@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { CarsDBService } from './DB_Service/cars_db.service';
@@ -11,16 +15,16 @@ export class CarsService {
     private readonly carsDBService: CarsDBService,
     private readonly imagesDBService: ImagesDBService,
     private readonly driverUserExtDBService: DriverUserExtDBService,
-  ) { }
+  ) {}
 
   async create(createCarDto: CreateCarDto) {
     // Check if driver exists
     const driver = await this.driverUserExtDBService.findOne({
       where: {
         user: {
-          id: createCarDto.driver_id
-        }
-      }
+          id: createCarDto.driver_id,
+        },
+      },
     });
     if (!driver) {
       throw new NotFoundException('Driver not found');
@@ -37,11 +41,11 @@ export class CarsService {
       throw new BadRequestException('Invalid images_json format');
     }
 
-    const { driver_id, images_json, ...carInfo } = createCarDto
+    const { driver_id, images_json, ...carInfo } = createCarDto;
     // Create car
     const car = this.carsDBService.instance({
       driver,
-      ...carInfo
+      ...carInfo,
     });
     const savedCar = await this.carsDBService.save(car);
 
@@ -152,7 +156,8 @@ export class CarsService {
 
     // Update car fields
     const updateData: any = {};
-    if (updateCarDto.seats_count) updateData.seats_count = Number(updateCarDto.seats_count);
+    if (updateCarDto.seats_count)
+      updateData.seats_count = Number(updateCarDto.seats_count);
     if (updateCarDto.car_type) updateData.car_type = updateCarDto.car_type;
     if (updateCarDto.color) updateData.color = updateCarDto.color;
     if (updateCarDto.licence) updateData.licence = updateCarDto.licence;

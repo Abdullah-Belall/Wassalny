@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTravelDto } from './dto/create-travel.dto';
 import { UpdateTravelDto } from './dto/update-travel.dto';
 import { TravelsDBService } from './DB_Service/travels_db.service';
@@ -13,7 +18,7 @@ export class TravelsService {
   constructor(
     private readonly travelsDBService: TravelsDBService,
     private readonly carsDBService: CarsDBService,
-  ) { }
+  ) {}
 
   async create(createTravelDto: CreateTravelDto) {
     // Check if car exists
@@ -34,8 +39,8 @@ export class TravelsService {
 
     return {
       done: true,
-      travel
-    }
+      travel,
+    };
   }
 
   async findAll(user_id: string) {
@@ -48,21 +53,23 @@ export class TravelsService {
         'car.images',
         'travel_passengers',
         'travel_passengers.passenger',
-        'travel_passengers.passenger.user'
+        'travel_passengers.passenger.user',
       ],
     });
     travels.forEach((e) => {
-      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id === user_id)
+      const isCurrUserPassenger = e.travel_passengers.find(
+        (travPass) => travPass.passenger?.user?.id === user_id,
+      );
       if (isCurrUserPassenger) {
-        (e as any).curr_user_status = isCurrUserPassenger.status
+        (e as any).curr_user_status = isCurrUserPassenger.status;
       } else {
-        (e as any).curr_user_status = null
+        (e as any).curr_user_status = null;
       }
-    })
+    });
     return {
       travels,
-      total
-    }
+      total,
+    };
   }
 
   async findByDriverUserId(driverUserId: string) {
@@ -74,7 +81,15 @@ export class TravelsService {
           },
         },
       },
-      relations: ['car', 'car.driver', 'car.images', 'car.driver.user', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
+      relations: [
+        'car',
+        'car.driver',
+        'car.images',
+        'car.driver.user',
+        'travel_passengers',
+        'travel_passengers.passenger',
+        'travel_passengers.passenger.user',
+      ],
       order: { start_time: 'ASC' },
     });
   }
@@ -107,23 +122,25 @@ export class TravelsService {
         'car.images',
         'travel_passengers',
         'travel_passengers.passenger',
-        'travel_passengers.passenger.user'
+        'travel_passengers.passenger.user',
       ],
       order: { start_time: 'ASC' },
     });
     travels.forEach((e) => {
-      const isCurrUserPassenger = e.travel_passengers.find((travPass) => travPass.passenger?.user?.id === user_id)
+      const isCurrUserPassenger = e.travel_passengers.find(
+        (travPass) => travPass.passenger?.user?.id === user_id,
+      );
       if (isCurrUserPassenger) {
-        (e as any).curr_user_status = isCurrUserPassenger.status
-        delete (e as any).travel_passengers
+        (e as any).curr_user_status = isCurrUserPassenger.status;
+        delete (e as any).travel_passengers;
       } else {
-        (e as any).curr_user_status = null
+        (e as any).curr_user_status = null;
       }
-    })
+    });
     return {
       travels,
-      total
-    }
+      total,
+    };
   }
 
   async findOne(id: string) {
@@ -137,16 +154,21 @@ export class TravelsService {
     return travel;
   }
 
-  async update(user_id: string, travel_id: string, updateTravelDto: UpdateTravelDto) {
+  async update(
+    user_id: string,
+    travel_id: string,
+    updateTravelDto: UpdateTravelDto,
+  ) {
     const travel = await this.travelsDBService.findOne({
       where: {
-        id: travel_id, car: {
+        id: travel_id,
+        car: {
           driver: {
             user: {
-              id: user_id
-            }
-          }
-        }
+              id: user_id,
+            },
+          },
+        },
       },
     });
     if (!travel) {
@@ -154,65 +176,85 @@ export class TravelsService {
     }
 
     if (travel.status !== TravelStatusEnum.PENDING) {
-      throw new BadRequestException(`Can't update trip with status "${travel.status}"`)
+      throw new BadRequestException(
+        `Can't update trip with status "${travel.status}"`,
+      );
     }
 
-    if (new Date().getTime() > (new Date(travel.created_at).getTime() + 30 * 60 * 1000)) {
-      throw new BadRequestException(`update not allowed after 30min from creation`)
+    if (
+      new Date().getTime() >
+      new Date(travel.created_at).getTime() + 30 * 60 * 1000
+    ) {
+      throw new BadRequestException(
+        `update not allowed after 30min from creation`,
+      );
     }
 
     // Update travel fields
     const updateData: any = {};
     if (updateTravelDto.details) updateData.details = updateTravelDto.details;
-    if (updateTravelDto.start_time) updateData.start_time = updateTravelDto.start_time;
-    if (updateTravelDto.start_location) updateData.start_location = updateTravelDto.start_location;
-    if (updateTravelDto.end_location) updateData.end_location = updateTravelDto.end_location;
-    if (updateTravelDto.duration_by_minutes) updateData.duration_by_minutes = Number(updateTravelDto.duration_by_minutes);
-    if (updateTravelDto.available_seats) updateData.available_seats = Number(updateTravelDto.available_seats);
-    if (updateTravelDto.price_per_seat) updateData.price_per_seat = Number(updateTravelDto.price_per_seat);
+    if (updateTravelDto.start_time)
+      updateData.start_time = updateTravelDto.start_time;
+    if (updateTravelDto.start_location)
+      updateData.start_location = updateTravelDto.start_location;
+    if (updateTravelDto.end_location)
+      updateData.end_location = updateTravelDto.end_location;
+    if (updateTravelDto.duration_by_minutes)
+      updateData.duration_by_minutes = Number(
+        updateTravelDto.duration_by_minutes,
+      );
+    if (updateTravelDto.available_seats)
+      updateData.available_seats = Number(updateTravelDto.available_seats);
+    if (updateTravelDto.price_per_seat)
+      updateData.price_per_seat = Number(updateTravelDto.price_per_seat);
 
     Object.assign(travel, updateData);
     await this.travelsDBService.save(travel);
 
     return {
-      done: true
-    }
+      done: true,
+    };
   }
 
-  async updateStatus(user_id: string, travel_id: string, { status }: UpdateTravelStatusDto) {
+  async updateStatus(
+    user_id: string,
+    travel_id: string,
+    { status }: UpdateTravelStatusDto,
+  ) {
     const travel = await this.travelsDBService.findOne({
       where: {
         id: travel_id,
         car: {
           driver: {
             user: {
-              id: user_id
-            }
-          }
-        }
+              id: user_id,
+            },
+          },
+        },
       },
       relations: ['travel_passengers'],
       select: {
         travel_passengers: {
           id: true,
-          status: true
-        }
-      }
-    })
-    if (!travel)
-      throw new NotFoundException('Trip not found')
+          status: true,
+        },
+      },
+    });
+    if (!travel) throw new NotFoundException('Trip not found');
     if (status === TravelStatusEnum.CANCELLED) {
-      await this.travelsDBService.save({ ...travel, status })
+      await this.travelsDBService.save({ ...travel, status });
       return {
-        done: true
-      }
+        done: true,
+      };
     }
-    if (travel.travel_passengers.every((e) => e.status === status as any)) {
-      throw new ConflictException(`Can't update status if passenger did't updated`)
+    if (travel.travel_passengers.every((e) => e.status === (status as any))) {
+      throw new ConflictException(
+        `Can't update status if passenger did't updated`,
+      );
     }
-    await this.travelsDBService.save({ ...travel, status })
+    await this.travelsDBService.save({ ...travel, status });
     return {
-      done: true
-    }
+      done: true,
+    };
   }
 }

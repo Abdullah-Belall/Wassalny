@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateTravelsPassengerDto } from './dto/create-travels_passenger.dto';
 import { TravelsPassengersDBService } from './DB_Service/travels_passengers_db.service';
 import { TravelsDBService } from 'src/travels/DB_Service/travels_db.service';
@@ -18,7 +23,7 @@ export class TravelsPassengersService {
     private readonly passengerUserExtDBService: PassengerUserExtDBService,
     private readonly usersDBService: UsersDBService,
     private readonly driverUserExtDBService: DriverUserExtDBService,
-  ) { }
+  ) {}
 
   async create(createTravelsPassengerDto: CreateTravelsPassengerDto) {
     // Check if travel exists
@@ -27,34 +32,40 @@ export class TravelsPassengersService {
       select: {
         travel_passengers: {
           id: true,
-          status: true
-        }
-      }
+          status: true,
+        },
+      },
     });
     if (!travel) {
       throw new NotFoundException('Travel not found');
     }
 
-    if (![TravelStatusEnum.BOOKING, TravelStatusEnum.PENDING].includes(travel.status)) {
-      throw new BadRequestException(`Can't book trip with status "${travel.status}"`)
+    if (
+      ![TravelStatusEnum.BOOKING, TravelStatusEnum.PENDING].includes(
+        travel.status,
+      )
+    ) {
+      throw new BadRequestException(
+        `Can't book trip with status "${travel.status}"`,
+      );
     }
 
     // Check if passenger exists
     const user = await this.usersDBService.findOne({
       where: {
-        id: createTravelsPassengerDto.passenger_id
+        id: createTravelsPassengerDto.passenger_id,
       },
-      relations: ['passenger_ext']
-    })
+      relations: ['passenger_ext'],
+    });
     if (!user || user.type !== UserTypeEnum.PASSENGER) {
       throw new NotFoundException('Passenger not found');
     }
-    if(!user.passenger_ext)
+    if (!user.passenger_ext)
       user.passenger_ext = await this.passengerUserExtDBService.save(
-    this.passengerUserExtDBService.instance({
-      user,
-    })
-  )
+        this.passengerUserExtDBService.instance({
+          user,
+        }),
+      );
 
     // Calculate total_price from travel price_per_seat
     const total_price = Number(travel.price_per_seat);
@@ -72,7 +83,10 @@ export class TravelsPassengersService {
     });
 
     if (travel.status === TravelStatusEnum.PENDING) {
-      await this.travelsDBService.save({ ...travel, status: TravelStatusEnum.BOOKING })
+      await this.travelsDBService.save({
+        ...travel,
+        status: TravelStatusEnum.BOOKING,
+      });
     }
 
     await this.travelsPassengersDBService.save(travelPassenger);
@@ -112,7 +126,10 @@ export class TravelsPassengersService {
       );
     }
 
-    if (travelPassenger.status !== TravelPassengerStatusEnum.PENDING && status === TravelPassengerStatusEnum.CANCELLED_AFTER_PAID) {
+    if (
+      travelPassenger.status !== TravelPassengerStatusEnum.PENDING &&
+      status === TravelPassengerStatusEnum.CANCELLED_AFTER_PAID
+    ) {
       throw new BadRequestException(
         `You did't paid to update status to "${status}"`,
       );
@@ -196,7 +213,12 @@ export class TravelsPassengersService {
     // Find travel passenger with travel and car relations
     const travelPassenger = await this.travelsPassengersDBService.findOne({
       where: { id: travel_passenger_id },
-      relations: ['travel', 'travel.car', 'travel.car.driver', 'travel.car.driver.user'],
+      relations: [
+        'travel',
+        'travel.car',
+        'travel.car.driver',
+        'travel.car.driver.user',
+      ],
     });
 
     if (!travelPassenger) {
@@ -226,10 +248,7 @@ export class TravelsPassengersService {
     };
   }
 
-  async payToConfirm(
-    user_id: string,
-    travel_passenger_id: string,
-  ) {
+  async payToConfirm(user_id: string, travel_passenger_id: string) {
     // Find travel passenger with passenger relation
     const travelPassenger = await this.travelsPassengersDBService.findOne({
       where: { id: travel_passenger_id },
@@ -257,21 +276,29 @@ export class TravelsPassengersService {
     if (travelPassenger.travel.status !== TravelStatusEnum.BOOKING) {
       throw new BadRequestException(
         `Cannot pay. Current trip status must be "${TravelStatusEnum.BOOKING}".`,
-      )
+      );
     }
 
     // Update status to PAID
     travelPassenger.status = TravelPassengerStatusEnum.PAID;
-    const travelPassengersLength = await this.travelsPassengersDBService.repo().count({
-      where: {
-        travel: {
-          id: travelPassenger.travel.id
+    const travelPassengersLength = await this.travelsPassengersDBService
+      .repo()
+      .count({
+        where: {
+          travel: {
+            id: travelPassenger.travel.id,
+          },
+          status: TravelPassengerStatusEnum.PAID,
         },
-        status: TravelPassengerStatusEnum.PAID
-      }
-    })
-    if (Number(travelPassenger.travel.available_seats) === Number(travelPassengersLength) + 1) {
-      await this.travelsDBService.save({ ...travelPassenger.travel, status: TravelStatusEnum.FULLY_BOOKED })
+      });
+    if (
+      Number(travelPassenger.travel.available_seats) ===
+      Number(travelPassengersLength) + 1
+    ) {
+      await this.travelsDBService.save({
+        ...travelPassenger.travel,
+        status: TravelStatusEnum.FULLY_BOOKED,
+      });
     }
     await this.travelsPassengersDBService.save(travelPassenger);
 
@@ -281,13 +308,25 @@ export class TravelsPassengersService {
   }
 
   async getPassengerTravels(userId: string) {
-    const { travelsPassengers, total } = await this.travelsPassengersDBService.find({
-      where: { passenger: { user: {
-        id: userId
-      } } },
-      relations: ['travel', 'travel.car', 'passenger'],
-      order: { start_time: 'ASC' },
-    });
+    const { travelsPassengers, total } =
+      await this.travelsPassengersDBService.find({
+        where: {
+          passenger: {
+            user: {
+              id: userId,
+            },
+          },
+        },
+        relations: [
+          'travel.car',
+          'travel.car.driver',
+          'travel.car.driver.user',
+          'travel.car.images',
+          'passenger',
+          'passenger.user',
+        ],
+        order: { start_time: 'ASC' },
+      });
     return { travelsPassengers, total };
   }
 
@@ -298,25 +337,31 @@ export class TravelsPassengersService {
     if (!driver) {
       throw new NotFoundException('Driver not found for this user');
     }
-    const { travelsPassengers, total } = await this.travelsPassengersDBService.find({
-      where: {
-        status: TravelPassengerStatusEnum.PENDING,
-        travel: {
-          car: {
-            driver: { id: driver.id },
+    const { travelsPassengers, total } =
+      await this.travelsPassengersDBService.find({
+        where: {
+          status: TravelPassengerStatusEnum.PENDING,
+          travel: {
+            car: {
+              driver: { id: driver.id },
+            },
           },
         },
-      },
-      relations: ['travel', 'travel.car', 'passenger', 'passenger.user'],
-      order: { created_at: 'DESC' },
-    });
+        relations: ['travel', 'travel.car', 'passenger', 'passenger.user'],
+        order: { created_at: 'DESC' },
+      });
     return { travelsPassengers, total };
   }
 
   async removePassengerFromTravel(userId: string, travelPassengerId: string) {
     const travelPassenger = await this.travelsPassengersDBService.findOne({
       where: { id: travelPassengerId },
-      relations: ['travel', 'travel.car', 'travel.car.driver', 'travel.car.driver.user'],
+      relations: [
+        'travel',
+        'travel.car',
+        'travel.car.driver',
+        'travel.car.driver.user',
+      ],
     });
     if (!travelPassenger) {
       throw new NotFoundException('Travel passenger not found');

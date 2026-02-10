@@ -42,7 +42,14 @@ export class ReviewsService {
     // Get travel with relations
     const travel = await this.travelsDBService.findOne({
       where: { id: travel_id },
-      relations: ['car', 'car.driver', 'car.driver.user', 'travel_passengers', 'travel_passengers.passenger', 'travel_passengers.passenger.user'],
+      relations: [
+        'car',
+        'car.driver',
+        'car.driver.user',
+        'travel_passengers',
+        'travel_passengers.passenger',
+        'travel_passengers.passenger.user',
+      ],
     });
 
     if (!travel) {
@@ -57,12 +64,16 @@ export class ReviewsService {
       }
 
       if (!passenger_id) {
-        throw new BadRequestException('passenger_id is required when driver reviews a passenger');
+        throw new BadRequestException(
+          'passenger_id is required when driver reviews a passenger',
+        );
       }
 
       // Check if driver owns the travel
       if (travel.car.driver.user.id !== user_id) {
-        throw new UnauthorizedException('You are not authorized to review this travel');
+        throw new UnauthorizedException(
+          'You are not authorized to review this travel',
+        );
       }
 
       // Check if passenger was in this travel
@@ -79,14 +90,18 @@ export class ReviewsService {
       // we'll use a workaround: check all passenger reviews for this travel
       // and verify if driver can review this specific passenger
       // Note: This is a limitation - ideally ReviewEntity should have reviewer_id and passenger_id
-      const existingReviews = await this.reviewsDBService.findReviewsByTravelAndType(travel_id, type);
-      
+      const existingReviews =
+        await this.reviewsDBService.findReviewsByTravelAndType(travel_id, type);
+
       // For now, we'll allow driver to review multiple passengers in the same travel
       // But we need to ensure each passenger is reviewed only once
       // Since we don't have passenger_id in ReviewEntity, we'll use index as a workaround
       // This is not ideal but works for the current schema
-      const passengerIndex = await this.reviewsDBService.nextIndex(travel_id, type);
-      
+      const passengerIndex = await this.reviewsDBService.nextIndex(
+        travel_id,
+        type,
+      );
+
       // Create review
       const reviewEntity = this.reviewsDBService.instance({
         travel,
@@ -101,11 +116,15 @@ export class ReviewsService {
     } else if (user.type === UserTypeEnum.PASSENGER) {
       // Passenger can review driver or car
       if (type !== ReviewTypeEnum.DRIVER && type !== ReviewTypeEnum.CAR) {
-        throw new BadRequestException('Passenger can only review driver or car');
+        throw new BadRequestException(
+          'Passenger can only review driver or car',
+        );
       }
 
       if (passenger_id) {
-        throw new BadRequestException('passenger_id should not be provided when passenger reviews');
+        throw new BadRequestException(
+          'passenger_id should not be provided when passenger reviews',
+        );
       }
 
       // Check if passenger was in this travel
@@ -114,7 +133,9 @@ export class ReviewsService {
       );
 
       if (!travelPassenger) {
-        throw new BadRequestException('You were not a passenger in this travel');
+        throw new BadRequestException(
+          'You were not a passenger in this travel',
+        );
       }
 
       // Check if passenger already reviewed this type for this travel
@@ -123,10 +144,13 @@ export class ReviewsService {
       // Note: This is a limitation - ideally ReviewEntity should have reviewer_id
       // For now, we'll allow only one review per travel per type
       // In production, you should add reviewer_id to ReviewEntity
-      const existingReview = await this.reviewsDBService.findReviewByTravelAndType(travel_id, type);
+      const existingReview =
+        await this.reviewsDBService.findReviewByTravelAndType(travel_id, type);
 
       if (existingReview) {
-        throw new ConflictException(`You have already reviewed the ${type.toLowerCase()} for this travel`);
+        throw new ConflictException(
+          `You have already reviewed the ${type.toLowerCase()} for this travel`,
+        );
       }
 
       // Create review
@@ -146,7 +170,11 @@ export class ReviewsService {
     }
   }
 
-  async update(user_id: string, review_id: string, updateReviewDto: UpdateReviewDto) {
+  async update(
+    user_id: string,
+    review_id: string,
+    updateReviewDto: UpdateReviewDto,
+  ) {
     const { review, rate } = updateReviewDto;
 
     // Get user to check type
@@ -162,7 +190,15 @@ export class ReviewsService {
     // Get review with relations
     const reviewEntity = await this.reviewsDBService.findOne({
       where: { id: review_id },
-      relations: ['travel', 'travel.car', 'travel.car.driver', 'travel.car.driver.user', 'travel.travel_passengers', 'travel.travel_passengers.passenger', 'travel.travel_passengers.passenger.user'],
+      relations: [
+        'travel',
+        'travel.car',
+        'travel.car.driver',
+        'travel.car.driver.user',
+        'travel.travel_passengers',
+        'travel.travel_passengers.passenger',
+        'travel.travel_passengers.passenger.user',
+      ],
     });
 
     if (!reviewEntity) {
@@ -173,17 +209,26 @@ export class ReviewsService {
     if (user.type === UserTypeEnum.DRIVER) {
       // Driver can only update reviews they created (passenger reviews)
       if (reviewEntity.type !== ReviewTypeEnum.PASSENGER) {
-        throw new UnauthorizedException('Driver can only update passenger reviews');
+        throw new UnauthorizedException(
+          'Driver can only update passenger reviews',
+        );
       }
 
       // Check if driver owns the travel
       if (reviewEntity.travel.car.driver.user.id !== user_id) {
-        throw new UnauthorizedException('You are not authorized to update this review');
+        throw new UnauthorizedException(
+          'You are not authorized to update this review',
+        );
       }
     } else if (user.type === UserTypeEnum.PASSENGER) {
       // Passenger can only update reviews they created (driver or car reviews)
-      if (reviewEntity.type !== ReviewTypeEnum.DRIVER && reviewEntity.type !== ReviewTypeEnum.CAR) {
-        throw new UnauthorizedException('Passenger can only update driver or car reviews');
+      if (
+        reviewEntity.type !== ReviewTypeEnum.DRIVER &&
+        reviewEntity.type !== ReviewTypeEnum.CAR
+      ) {
+        throw new UnauthorizedException(
+          'Passenger can only update driver or car reviews',
+        );
       }
 
       // Check if passenger was in this travel
@@ -192,7 +237,9 @@ export class ReviewsService {
       );
 
       if (!travelPassenger) {
-        throw new UnauthorizedException('You were not a passenger in this travel');
+        throw new UnauthorizedException(
+          'You were not a passenger in this travel',
+        );
       }
 
       // Additional check: verify this review belongs to this passenger
@@ -218,46 +265,52 @@ export class ReviewsService {
     const user = await this.usersDBService.findOne({
       where: {
         id: user_id,
-      }
-    })
-    if(!user)
-      throw new NotFoundException()
-    const reviews: ReviewEntity[] = []
-    if(user.type === UserTypeEnum.DRIVER) {
-      reviews.push(...(await this.reviewsDBService.find({
-        where: {
-          travel: {
-            id: travel_id,
-            car: {
-              driver: {
-                user: {
-                  id: user_id
-                }
-              }
-            }
-          },
-          
-        }
-      })).reviews)
+      },
+    });
+    if (!user) throw new NotFoundException();
+    const reviews: ReviewEntity[] = [];
+    if (user.type === UserTypeEnum.DRIVER) {
+      reviews.push(
+        ...(
+          await this.reviewsDBService.find({
+            where: {
+              travel: {
+                id: travel_id,
+                car: {
+                  driver: {
+                    user: {
+                      id: user_id,
+                    },
+                  },
+                },
+              },
+            },
+          })
+        ).reviews,
+      );
     } else {
-      reviews.push(...(await this.reviewsDBService.find({
-        where: {
-          travel: {
-            id: travel_id,
-            travel_passengers: {
-              passenger: {
-                user: {
-                  id: user_id
-                }
-              }
-            }
-          },
-        }
-      })).reviews)
+      reviews.push(
+        ...(
+          await this.reviewsDBService.find({
+            where: {
+              travel: {
+                id: travel_id,
+                travel_passengers: {
+                  passenger: {
+                    user: {
+                      id: user_id,
+                    },
+                  },
+                },
+              },
+            },
+          })
+        ).reviews,
+      );
     }
     return {
       reviews,
-      total: reviews.length
-    }
+      total: reviews.length,
+    };
   }
 }

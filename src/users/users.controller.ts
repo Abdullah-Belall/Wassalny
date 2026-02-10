@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Res, Get, UseGuards, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Get,
+  UseGuards,
+  Patch,
+  Param,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SignInDto } from './dto/sign-in.dto';
 import type { Response } from 'express';
@@ -11,7 +20,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
   async register(
@@ -22,9 +31,10 @@ export class UsersController {
     return await this.usersService.signIn(
       {
         password: registerDto.password,
-        phone: registerDto.phone
+        phone: registerDto.phone,
       },
-      res);
+      res,
+    );
   }
 
   @Post('login')
@@ -53,7 +63,10 @@ export class UsersController {
     @User() { id }: UserTokenInterface,
     @Body() changeKnownPasswordDto: ChangeKnownPasswordDto,
   ) {
-    return await this.usersService.changeKnownPassword(id, changeKnownPasswordDto);
+    return await this.usersService.changeKnownPassword(
+      id,
+      changeKnownPasswordDto,
+    );
   }
 
   @Patch('reset-password')

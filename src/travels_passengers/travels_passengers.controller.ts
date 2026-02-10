@@ -19,7 +19,7 @@ import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.i
 export class TravelsPassengersController {
   constructor(
     private readonly travelsPassengersService: TravelsPassengersService,
-  ) { }
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard)
