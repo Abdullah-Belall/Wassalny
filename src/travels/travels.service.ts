@@ -48,6 +48,8 @@ export class TravelsService {
       if (isCurrUserPassenger) {
         (e as any).curr_user_status = isCurrUserPassenger.status
         delete (e as any).travel_passengers
+      } else {
+        (e as any).curr_user_status = null
       }
     })
     return {
@@ -107,6 +109,8 @@ export class TravelsService {
       if (isCurrUserPassenger) {
         (e as any).curr_user_status = isCurrUserPassenger.status
         delete (e as any).travel_passengers
+      } else {
+        (e as any).curr_user_status = null
       }
     })
     return {
