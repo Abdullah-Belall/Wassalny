@@ -14,6 +14,7 @@ import { PassengerUserExtDBService } from 'src/users/DB_Service/passenger-user-e
 import { DriverUserExtDBService } from 'src/users/DB_Service/driver-user-ext_db.service';
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { UserTypeEnum } from 'src/users/types/enums/user-type.enum';
+import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 
 @Injectable()
 export class TravelsPassengersService {
@@ -97,14 +98,25 @@ export class TravelsPassengersService {
   }
 
   async passengerUpdateStatus(
-    travel_passenger_id: string,
+    { id, type }: UserTokenInterface,
+    travel_id: string,
     updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
   ) {
+    if (type !== UserTypeEnum.PASSENGER)
+      throw new BadRequestException(`Your are not a passenger user.`);
     const { status } = updateTravelPassengerStatusDto;
 
-    // Find travel passenger with travel relation
     const travelPassenger = await this.travelsPassengersDBService.findOne({
-      where: { id: travel_passenger_id },
+      where: {
+        passenger: {
+          user: {
+            id,
+          },
+        },
+        travel: {
+          id: travel_id,
+        },
+      },
       relations: ['travel'],
     });
 
@@ -195,7 +207,7 @@ export class TravelsPassengersService {
 
   async driverUpdateStatus(
     user_id: string,
-    travel_passenger_id: string,
+    travel_id: string,
     updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
   ) {
     const { status } = updateTravelPassengerStatusDto;
@@ -212,7 +224,11 @@ export class TravelsPassengersService {
 
     // Find travel passenger with travel and car relations
     const travelPassenger = await this.travelsPassengersDBService.findOne({
-      where: { id: travel_passenger_id },
+      where: {
+        travel: {
+          id: travel_id,
+        },
+      },
       relations: [
         'travel',
         'travel.car',

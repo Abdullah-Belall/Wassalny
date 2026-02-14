@@ -1,1 +1,27 @@
-export class CreateSearchEngineDto {}
+import { IsIn, IsOptional, IsString } from 'class-validator';
+
+export const SEARCH_ENGINE_ENTITIES = [
+  'travels',
+  'cars',
+  'reviews',
+  'users',
+  'travels_passengers',
+  'images',
+] as const;
+
+export type SearchEngineEntity = (typeof SEARCH_ENGINE_ENTITIES)[number];
+
+export class CreateSearchEngineDto {
+  @IsString()
+  @IsIn(SEARCH_ENGINE_ENTITIES)
+  entity: string;
+  @IsString()
+  query: string;
+  @IsString()
+  @IsOptional()
+  add_select: string;
+  @IsString()
+  order_by_column?: string; // same.index
+  @IsIn(['DESC', 'ASC'])
+  order_by_order?: 'DESC' | 'ASC';
+}

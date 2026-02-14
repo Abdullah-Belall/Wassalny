@@ -39,28 +39,30 @@ export class TravelsPassengersController {
     return this.travelsPassengersService.getBookingRequests(id);
   }
 
-  @Patch(':id/status')
+  @Patch(':travel_id/status')
   @UseGuards(AuthGuard)
   passengerUpdateStatus(
-    @Param('id') id: string,
+    @Param('travel_id') travel_id: string,
+    @User() user: UserTokenInterface,
     @Body() updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
   ) {
     return this.travelsPassengersService.passengerUpdateStatus(
-      id,
+      user,
+      travel_id,
       updateTravelPassengerStatusDto,
     );
   }
 
-  @Patch(':id/status/driver')
+  @Patch(':travel_id/status/driver')
   @UseGuards(AuthGuard)
   driverUpdateStatus(
     @User() { id: user_id }: UserTokenInterface,
-    @Param('id') travel_passenger_id: string,
+    @Param('travel_id') travel_id: string,
     @Body() updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
   ) {
     return this.travelsPassengersService.driverUpdateStatus(
       user_id,
-      travel_passenger_id,
+      travel_id,
       updateTravelPassengerStatusDto,
     );
   }

@@ -94,55 +94,6 @@ export class TravelsService {
     });
   }
 
-  async search(user_id: string, searchTravelsDto: SearchTravelsDto) {
-    const where: any = {};
-    if (searchTravelsDto.start_location) {
-      where.start_location = Like(`%${searchTravelsDto.start_location}%`);
-    }
-    if (searchTravelsDto.end_location) {
-      where.end_location = Like(`%${searchTravelsDto.end_location}%`);
-    }
-    if (searchTravelsDto.start_time_from && searchTravelsDto.start_time_to) {
-      where.start_time = Between(
-        searchTravelsDto.start_time_from,
-        searchTravelsDto.start_time_to,
-      );
-    } else if (searchTravelsDto.start_time_from) {
-      where.start_time = MoreThanOrEqual(searchTravelsDto.start_time_from);
-    } else if (searchTravelsDto.start_time_to) {
-      where.start_time = LessThanOrEqual(searchTravelsDto.start_time_to);
-    }
-    where.status = Not(TravelStatusEnum.FULLY_BOOKED);
-    const { travels, total } = await this.travelsDBService.find({
-      where,
-      relations: [
-        'car',
-        'car.driver',
-        'car.driver.user',
-        'car.images',
-        'travel_passengers',
-        'travel_passengers.passenger',
-        'travel_passengers.passenger.user',
-      ],
-      order: { start_time: 'ASC' },
-    });
-    travels.forEach((e) => {
-      const isCurrUserPassenger = e.travel_passengers.find(
-        (travPass) => travPass.passenger?.user?.id === user_id,
-      );
-      if (isCurrUserPassenger) {
-        (e as any).curr_user_status = isCurrUserPassenger.status;
-        delete (e as any).travel_passengers;
-      } else {
-        (e as any).curr_user_status = null;
-      }
-    });
-    return {
-      travels,
-      total,
-    };
-  }
-
   async findOne(id: string) {
     const travel = await this.travelsDBService.findOne({
       where: { id },
