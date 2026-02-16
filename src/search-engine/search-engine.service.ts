@@ -19,9 +19,9 @@ export class SearchEngineService {
 
   async searchEngine(
     entity: string,
-    query: string,
-    add_select: string,
-    order_by: {
+    query?: string,
+    add_select?: string,
+    order_by?: {
       column?: string;
       order?: 'DESC' | 'ASC';
     },
@@ -31,7 +31,7 @@ export class SearchEngineService {
       condition: string;
       key: string;
       value: string | number | boolean | string[];
-    }[] = JSON.parse(query);
+    }[] = query ? JSON.parse(query) : [];
     const qb = this.getQB(entity);
 
     if (!qb) {
