@@ -21,7 +21,9 @@ export class CreateSearchEngineDto {
   @IsOptional()
   add_select: string;
   @IsString()
-  order_by_column?: string; // same.index
+  @IsOptional()
+  order_by_column?: string;
   @IsIn(['DESC', 'ASC'])
+  @IsOptional()
   order_by_order?: 'DESC' | 'ASC';
 }
