@@ -15,6 +15,7 @@ import { DriverUserExtDBService } from 'src/users/DB_Service/driver-user-ext_db.
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { UserTypeEnum } from 'src/users/types/enums/user-type.enum';
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
+import { DriverUpdateStatusDto } from './dto/driver-update.dto';
 
 @Injectable()
 export class TravelsPassengersService {
@@ -208,10 +209,8 @@ export class TravelsPassengersService {
   async driverUpdateStatus(
     user_id: string,
     travel_id: string,
-    updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
+    { passenger_id, status }: DriverUpdateStatusDto,
   ) {
-    const { status } = updateTravelPassengerStatusDto;
-
     // Validate: Only DRIVER_ACCEPT and DRIVER_REJECT are allowed
     if (
       status !== TravelPassengerStatusEnum.DRIVER_ACCEPT &&
@@ -227,6 +226,11 @@ export class TravelsPassengersService {
       where: {
         travel: {
           id: travel_id,
+        },
+        passenger: {
+          user: {
+            id: passenger_id,
+          },
         },
       },
       relations: [

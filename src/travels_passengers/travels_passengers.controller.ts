@@ -14,6 +14,7 @@ import { UpdateTravelPassengerStatusDto } from './dto/update-travel-passenger-st
 import { AuthGuard } from 'src/guards/auth.guard';
 import { User } from 'src/users/decorators/user.decorator';
 import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
+import { DriverUpdateStatusDto } from './dto/driver-update.dto';
 
 @Controller('travels-passengers')
 export class TravelsPassengersController {
@@ -58,12 +59,12 @@ export class TravelsPassengersController {
   driverUpdateStatus(
     @User() { id: user_id }: UserTokenInterface,
     @Param('travel_id') travel_id: string,
-    @Body() updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
+    @Body() dto: DriverUpdateStatusDto,
   ) {
     return this.travelsPassengersService.driverUpdateStatus(
       user_id,
       travel_id,
-      updateTravelPassengerStatusDto,
+      dto,
     );
   }
 
