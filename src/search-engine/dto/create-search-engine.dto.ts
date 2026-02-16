@@ -1,4 +1,4 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsJSON, IsOptional, IsString } from 'class-validator';
 
 export const SEARCH_ENGINE_ENTITIES = [
   'travels',
@@ -15,9 +15,9 @@ export class CreateSearchEngineDto {
   @IsString()
   @IsIn(SEARCH_ENGINE_ENTITIES)
   entity: string;
-  @IsString()
+  @IsJSON()
   query: string;
-  @IsString()
+  @IsJSON()
   @IsOptional()
   add_select: string;
   @IsString()
