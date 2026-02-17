@@ -110,6 +110,7 @@ export class SearchEngineService {
           .leftJoin('travel_passenger.passenger', 'passenger')
           .leftJoin('passenger.user', 'passenger_user')
           .leftJoin('travel.car', 'car')
+          .leftJoin('car.images', 'images')
           .leftJoin('car.driver', 'driver')
           .leftJoin('driver.user', 'driver_user');
 
