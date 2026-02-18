@@ -96,7 +96,7 @@ export class SearchEngineService {
           qb.leftJoin(
             'travel.travel_passengers',
             'tp_curr',
-            'tp_curr.passengerId = (SELECT "passenger_extId" FROM users WHERE id = :curr_user_id)',
+            'tp_curr.passengerId = (SELECT "passengerExtId" FROM users WHERE id = :curr_user_id)',
           )
             .addSelect('tp_curr.status', 'curr_user_status')
             .setParameter('curr_user_id', user_id);
