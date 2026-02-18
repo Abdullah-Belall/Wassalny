@@ -119,6 +119,35 @@ export class TravelsPassengersService {
 
     await this.travelsPassengersDBService.save(travelPassenger);
 
+    // Update travel to FULLY_BOOKED when booked seats = available seats
+    const result = await this.travelsPassengersDBService
+      .repo()
+      .createQueryBuilder('tp')
+      .select('COALESCE(SUM(tp.seats), 0)', 'totalBookedSeats')
+      .where('tp.travelId = :travelId', {
+        travelId: createTravelsPassengerDto.travel_id,
+      })
+      .andWhere('tp.status IN (:...statuses)', {
+        statuses: [
+          TravelPassengerStatusEnum.PENDING,
+          TravelPassengerStatusEnum.DRIVER_ACCEPT,
+          TravelPassengerStatusEnum.PAID,
+        ],
+      })
+      .getRawOne<{ totalBookedSeats: string }>();
+
+    const totalBookedSeats = Number(result?.totalBookedSeats ?? 0);
+
+    if (
+      totalBookedSeats >= Number(travel.available_seats) &&
+      travel.status === TravelStatusEnum.BOOKING
+    ) {
+      await this.travelsDBService.save({
+        ...travel,
+        status: TravelStatusEnum.FULLY_BOOKED,
+      });
+    }
+
     return {
       done: true,
     };
