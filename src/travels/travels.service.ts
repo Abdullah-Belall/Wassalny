@@ -198,11 +198,11 @@ export class TravelsService {
         done: true,
       };
     }
-    if (travel.travel_passengers.every((e) => e.status === (status as any))) {
-      throw new ConflictException(
-        `Can't update status if passenger did't updated`,
-      );
-    }
+    // if (travel.travel_passengers.every((e) => e.status === (status as any))) {
+    //   throw new ConflictException(
+    //     `Can't update status if passenger did't updated`,
+    //   );
+    // }
     await this.travelsDBService.save({ ...travel, status });
     return {
       done: true,
