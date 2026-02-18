@@ -1,4 +1,4 @@
-import { IsNumber, IsUUID } from "class-validator";
+import { IsNumber, IsUUID } from 'class-validator';
 
 export class CreateTravelsPassengerDto {
   @IsUUID()
@@ -7,4 +7,6 @@ export class CreateTravelsPassengerDto {
   passenger_id: string;
   @IsNumber()
   deposit: number;
+  @IsNumber()
+  seats: number;
 }

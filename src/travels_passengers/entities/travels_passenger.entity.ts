@@ -30,6 +30,8 @@ export class TravelsPassengerEntity {
     default: TravelPassengerStatusEnum.PENDING,
   })
   status: TravelPassengerStatusEnum;
+  @Column({ type: 'int' })
+  seats: number;
   @Column({ type: 'decimal' })
   total_price: number;
   @Column({ type: 'decimal' })

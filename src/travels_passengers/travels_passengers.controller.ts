@@ -7,6 +7,7 @@ import {
   UseGuards,
   Get,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { TravelsPassengersService } from './travels_passengers.service';
 import { CreateTravelsPassengerDto } from './dto/create-travels_passenger.dto';
@@ -58,7 +59,7 @@ export class TravelsPassengersController {
   @UseGuards(AuthGuard)
   driverUpdateStatus(
     @User() { id: user_id }: UserTokenInterface,
-    @Param('travel_id') travel_id: string,
+    @Param('travel_id', new ParseUUIDPipe()) travel_id: string,
     @Body() dto: DriverUpdateStatusDto,
   ) {
     return this.travelsPassengersService.driverUpdateStatus(

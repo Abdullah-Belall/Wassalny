@@ -81,6 +81,7 @@ export class TravelsPassengersService {
       start_time: travel.start_time,
       start_location: travel.start_location,
       end_location: travel.end_location,
+      seats: createTravelsPassengerDto.seats,
       status: TravelPassengerStatusEnum.PENDING,
     });
 
