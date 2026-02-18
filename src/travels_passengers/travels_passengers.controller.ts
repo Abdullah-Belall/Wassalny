@@ -44,7 +44,7 @@ export class TravelsPassengersController {
   @Patch(':travel_id/status')
   @UseGuards(AuthGuard)
   passengerUpdateStatus(
-    @Param('travel_id') travel_id: string,
+    @Param('travel_id', new ParseUUIDPipe()) travel_id: string,
     @User() user: UserTokenInterface,
     @Body() updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
   ) {

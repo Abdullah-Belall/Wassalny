@@ -28,6 +28,30 @@ export class TravelsPassengersService {
   ) {}
 
   async create(createTravelsPassengerDto: CreateTravelsPassengerDto) {
+    const isActionsBefore = await this.travelsPassengersDBService.findOne({
+      where: {
+        travel: {
+          id: createTravelsPassengerDto.travel_id,
+        },
+        passenger: {
+          user: {
+            id: createTravelsPassengerDto.passenger_id,
+          },
+        },
+      },
+    });
+    if (isActionsBefore) {
+      return await this.passengerUpdateStatus(
+        {
+          id: createTravelsPassengerDto.passenger_id,
+          type: UserTypeEnum.PASSENGER,
+        } as any,
+        createTravelsPassengerDto.travel_id,
+        {
+          status: TravelPassengerStatusEnum.PENDING,
+        },
+      );
+    }
     // Check if travel exists
     const travel = await this.travelsDBService.findOne({
       where: { id: createTravelsPassengerDto.travel_id },
