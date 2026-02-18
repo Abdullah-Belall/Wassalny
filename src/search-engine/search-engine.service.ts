@@ -25,6 +25,7 @@ export class SearchEngineService {
       column?: string;
       order?: 'DESC' | 'ASC';
     },
+    user_id?: string,
   ) {
     const parsedQuery: {
       column: string;
@@ -32,7 +33,7 @@ export class SearchEngineService {
       key: string;
       value: string | number | boolean | string[];
     }[] = query ? JSON.parse(query) : [];
-    const qb = this.getQB(entity);
+    const qb = this.getQB(entity, user_id);
 
     if (!qb) {
       throw new BadRequestException('Not found Entity');
@@ -60,6 +61,17 @@ export class SearchEngineService {
         order_by.order ?? 'ASC',
       ).addOrderBy(`${order_by.column}::text`, order_by.order ?? 'ASC');
     }
+
+    const isTravelsWithCurrUserStatus = entity === 'travels' && user_id;
+    if (isTravelsWithCurrUserStatus) {
+      const { entities, raw } = await qb.getRawAndEntities();
+      const data = entities.map((travel, i) => ({
+        ...travel,
+        curr_user_status: raw[i]?.curr_user_status ?? null,
+      }));
+      return { data, total: data.length };
+    }
+
     const [data, total] = await qb.getManyAndCount();
     return {
       data,
@@ -67,10 +79,10 @@ export class SearchEngineService {
     };
   }
 
-  getQB(entity: string) {
+  getQB(entity: string, user_id?: string) {
     switch (entity) {
-      case 'travels':
-        return this.travelDBService
+      case 'travels': {
+        const qb = this.travelDBService
           .QB('travel')
           .leftJoin('travel.car', 'car')
           .leftJoin('car.images', 'images')
@@ -80,6 +92,17 @@ export class SearchEngineService {
           .leftJoin('travel.travel_passengers', 'travel_passengers')
           .leftJoin('travel_passengers.passenger', 'passenger')
           .leftJoin('passenger.user', 'passenger_user');
+        if (user_id) {
+          qb.leftJoin(
+            'travel.travel_passengers',
+            'tp_curr',
+            'tp_curr.passengerId = (SELECT "passenger_extId" FROM users WHERE id = :curr_user_id)',
+          )
+            .addSelect('tp_curr.status', 'curr_user_status')
+            .setParameter('curr_user_id', user_id);
+        }
+        return qb;
+      }
 
       case 'cars':
         return this.carsDBService

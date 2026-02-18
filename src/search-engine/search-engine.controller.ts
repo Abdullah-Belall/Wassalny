@@ -2,6 +2,8 @@ import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { SearchEngineService } from './search-engine.service';
 import { CreateSearchEngineDto } from './dto/create-search-engine.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { User } from 'src/users/decorators/user.decorator';
+import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 
 @Controller('search-engine')
 export class SearchEngineController {
@@ -18,6 +20,7 @@ export class SearchEngineController {
       order_by_column,
       order_by_order,
     }: CreateSearchEngineDto,
+    @User() user: UserTokenInterface,
   ) {
     return await this.searchEngineService.searchEngine(
       entity,
@@ -27,6 +30,7 @@ export class SearchEngineController {
         column: order_by_column,
         order: order_by_order,
       },
+      user?.id,
     );
   }
 }
