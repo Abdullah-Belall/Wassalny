@@ -160,7 +160,7 @@ export class TravelsPassengersService {
       TravelPassengerStatusEnum.DRIVER_REJECT,
     ];
 
-    if (forbiddenStatuses.includes(status) && skipVaildation) {
+    if (forbiddenStatuses.includes(status) && !skipVaildation) {
       throw new BadRequestException(
         `Cannot change status to "${status}". This status can only be set by the system.`,
       );
@@ -169,7 +169,7 @@ export class TravelsPassengersService {
     if (
       travelPassenger.status !== TravelPassengerStatusEnum.PENDING &&
       status === TravelPassengerStatusEnum.CANCELLED_AFTER_PAID &&
-      skipVaildation
+      !skipVaildation
     ) {
       throw new BadRequestException(
         `You did't paid to update status to "${status}"`,
@@ -186,7 +186,7 @@ export class TravelsPassengersService {
       TravelPassengerStatusEnum.CANCELLED_AFTER_PAID,
     ];
 
-    if (statusesRequiringPaid.includes(status) && skipVaildation) {
+    if (statusesRequiringPaid.includes(status) && !skipVaildation) {
       if (travelPassenger.status !== TravelPassengerStatusEnum.PAID) {
         throw new BadRequestException(
           `Cannot change status to "${status}". Current status must be "Paid".`,
