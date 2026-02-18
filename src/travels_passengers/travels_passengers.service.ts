@@ -50,6 +50,7 @@ export class TravelsPassengersService {
         {
           status: TravelPassengerStatusEnum.PENDING,
         },
+        true,
       );
     }
     // Check if travel exists
@@ -127,6 +128,7 @@ export class TravelsPassengersService {
     { id, type }: UserTokenInterface,
     travel_id: string,
     updateTravelPassengerStatusDto: UpdateTravelPassengerStatusDto,
+    skipVaildation?: boolean,
   ) {
     if (type !== UserTypeEnum.PASSENGER)
       throw new BadRequestException(`Your are not a passenger user.`);
@@ -158,7 +160,7 @@ export class TravelsPassengersService {
       TravelPassengerStatusEnum.DRIVER_REJECT,
     ];
 
-    if (forbiddenStatuses.includes(status)) {
+    if (forbiddenStatuses.includes(status) && skipVaildation) {
       throw new BadRequestException(
         `Cannot change status to "${status}". This status can only be set by the system.`,
       );
@@ -166,7 +168,8 @@ export class TravelsPassengersService {
 
     if (
       travelPassenger.status !== TravelPassengerStatusEnum.PENDING &&
-      status === TravelPassengerStatusEnum.CANCELLED_AFTER_PAID
+      status === TravelPassengerStatusEnum.CANCELLED_AFTER_PAID &&
+      skipVaildation
     ) {
       throw new BadRequestException(
         `You did't paid to update status to "${status}"`,
@@ -183,7 +186,7 @@ export class TravelsPassengersService {
       TravelPassengerStatusEnum.CANCELLED_AFTER_PAID,
     ];
 
-    if (statusesRequiringPaid.includes(status)) {
+    if (statusesRequiringPaid.includes(status) && skipVaildation) {
       if (travelPassenger.status !== TravelPassengerStatusEnum.PAID) {
         throw new BadRequestException(
           `Cannot change status to "${status}". Current status must be "Paid".`,
