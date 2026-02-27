@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -15,6 +16,7 @@ import { DriverUserExtDBService } from './DB_Service/driver-user-ext_db.service'
 import { UserTypeEnum } from './types/enums/user-type.enum';
 import { ChangeKnownPasswordDto } from './dto/change-known-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +26,17 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register({ phone, password, type, image_id, user_name }: RegisterDto) {
+  async register({
+    phone,
+    password,
+    type,
+    image_id,
+    user_name,
+    ssn,
+    driving_license_id,
+  }: RegisterDto) {
+    if (type === UserTypeEnum.DRIVER && !driving_license_id)
+      throw new BadRequestException('driving_license is required');
     const isDublicated = await this.usersDBService.findOne({
       where: {
         phone,
@@ -40,12 +52,14 @@ export class UsersService {
         type,
         user_name,
         avatar: image_id,
+        ssn,
       }),
     );
     if (type === UserTypeEnum.DRIVER) {
       await this.driverUserExtDBService.save(
         this.driverUserExtDBService.instance({
           user: savedUser,
+          driving_license: driving_license_id,
         }),
       );
     }
@@ -104,6 +118,21 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     return { ...user, password: undefined };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.usersDBService.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const toSave = { ...user };
+    if (dto.user_name !== undefined) toSave.user_name = dto.user_name;
+    if (dto.image_id !== undefined) toSave.avatar = dto.image_id;
+    if (dto.ssn !== undefined) toSave.ssn = dto.ssn;
+    await this.usersDBService.save(toSave);
+    return { ...toSave, password: undefined };
   }
 
   async changeKnownPassword(userId: string, dto: ChangeKnownPasswordDto) {

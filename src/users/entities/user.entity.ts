@@ -24,6 +24,9 @@ export class UserEntity {
   @JoinColumn()
   passenger_ext: PassengerUserEntity
 
+  @Column({ nullable: true })
+  ssn: string;
+
   @Column({ type: 'int' })
   index: number;
   @Column({ nullable: true })

@@ -10,6 +10,7 @@ import { TravelsModule } from './travels/travels.module';
 import { TravelsPassengersModule } from './travels_passengers/travels_passengers.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SearchEngineModule } from './search-engine/search-engine.module';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import { SearchEngineModule } from './search-engine/search-engine.module';
     TravelsModule,
     TravelsPassengersModule,
     ReviewsModule,
-    SearchEngineModule
+    SearchEngineModule,
+    SmsModule
   ],
 })
 export class AppModule implements NestModule {

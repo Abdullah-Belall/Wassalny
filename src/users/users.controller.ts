@@ -17,6 +17,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { RegisterDto } from './dto/register.dto';
 import { ChangeKnownPasswordDto } from './dto/change-known-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -55,6 +56,15 @@ export class UsersController {
   @UseGuards(AuthGuard)
   async profile(@User() { id }: UserTokenInterface) {
     return await this.usersService.profile(id);
+  }
+
+  @Patch('profile')
+  @UseGuards(AuthGuard)
+  async updateProfile(
+    @User() { id }: UserTokenInterface,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    return await this.usersService.updateProfile(id, updateProfileDto);
   }
 
   @Patch('password')
