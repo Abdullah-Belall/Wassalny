@@ -123,6 +123,7 @@ export class UsersService {
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const user = await this.usersDBService.findOne({
       where: { id: userId },
+      relations: ['driver_ext'],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -132,6 +133,12 @@ export class UsersService {
     if (dto.image_id !== undefined) toSave.avatar = dto.image_id;
     if (dto.ssn !== undefined) toSave.ssn = dto.ssn;
     await this.usersDBService.save(toSave);
+    if (dto.driving_license_id && user.type === UserTypeEnum.DRIVER) {
+      toSave.driver_ext.driving_license = dto.driving_license_id;
+      await this.driverUserExtDBService.save({
+        ...toSave.driver_ext,
+      });
+    }
     return { ...toSave, password: undefined };
   }
 

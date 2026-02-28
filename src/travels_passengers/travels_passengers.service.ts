@@ -56,6 +56,7 @@ export class TravelsPassengersService {
     // Check if travel exists
     const travel = await this.travelsDBService.findOne({
       where: { id: createTravelsPassengerDto.travel_id },
+      relations: ['travel_passengers'],
       select: {
         travel_passengers: {
           id: true,
@@ -66,7 +67,6 @@ export class TravelsPassengersService {
     if (!travel) {
       throw new NotFoundException('Travel not found');
     }
-
     if (
       ![TravelStatusEnum.BOOKING, TravelStatusEnum.PENDING].includes(
         travel.status,
@@ -74,6 +74,17 @@ export class TravelsPassengersService {
     ) {
       throw new BadRequestException(
         `Can't book trip with status "${travel.status}"`,
+      );
+    }
+    const totalBookedSeats = travel.travel_passengers
+      ?.filter((e) => e.status === TravelPassengerStatusEnum.DRIVER_ACCEPT)
+      .reduce((acc, curr) => acc + Number(curr.seats), 0);
+    if (
+      totalBookedSeats + Number(createTravelsPassengerDto.seats) >
+      Number(travel.available_seats)
+    ) {
+      throw new BadRequestException(
+        `This travel has only ${Number(travel.available_seats) - totalBookedSeats} seats now`,
       );
     }
 
@@ -110,12 +121,10 @@ export class TravelsPassengersService {
       status: TravelPassengerStatusEnum.PENDING,
     });
 
-    if (travel.status === TravelStatusEnum.PENDING) {
-      await this.travelsDBService.save({
-        ...travel,
-        status: TravelStatusEnum.BOOKING,
-      });
-    }
+    await this.travelsDBService.save({
+      ...travel,
+      status: TravelStatusEnum.BOOKING,
+    });
 
     await this.travelsPassengersDBService.save(travelPassenger);
 
