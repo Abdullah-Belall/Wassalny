@@ -87,7 +87,6 @@ export class TravelsPassengersService {
         `This travel has only ${Number(travel.available_seats) - totalBookedSeats} seats now`,
       );
     }
-
     // Check if passenger exists
     const user = await this.usersDBService.findOne({
       where: {
